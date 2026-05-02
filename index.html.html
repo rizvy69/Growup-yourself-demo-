@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grow Yourself Fastly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0d0d0d;
+            --paper: #f5f0e8;
+            --cream: #ede7d9;
+            --accent: #e84b3c;
+            --accent2: #2d6a4f;
+            --gold: #c9a84c;
+            --soft: #b5c7b5;
+            --muted: #888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* GRAIN OVERLAY */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.5;
+        }
+
+        .page { display: none; }
+        .page.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* ── SHARED LAYOUT ── */
+        .site-header {
+            border-bottom: 2px solid var(--ink);
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--paper);
+        }
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+        .logo span { color: var(--accent); }
+
+        .main-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: white;
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            box-shadow: 6px 6px 0 var(--ink);
+            padding: 48px;
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+        .card-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 36px;
+        }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--ink);
+            box-shadow: 3px 3px 0 var(--ink);
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-block;
+            padding: 13px 28px;
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            background: var(--ink);
+            color: white;
+        }
+        .btn:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--accent); }
+        .btn-outline {
+            background: transparent;
+            color: var(--ink);
+        }
+        .btn-outline:hover { box-shadow: 4px 4px 0 var(--ink); }
+        .btn-danger { background: var(--accent); border-color: var(--accent); }
+        .btn-danger:hover { box-shadow: 4px 4px 0 var(--ink); }
+        .btn-sm { padding: 8px 16px; font-size: 0.75rem; }
+        .btn-green { background: var(--accent2); border-color: var(--accent2); }
+
+        .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+        /* ── DASHBOARD ── */
+        #dashboardPage { background: var(--paper); }
+
+        .dash-header {
+            border-bottom: 2px solid var(--ink);
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--paper);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .dash-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            letter-spacing: -0.03em;
+        }
+        .welcome-tag {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .dash-body { padding: 40px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+        /* GOAL BANNER */
+        .goal-banner {
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            background: var(--ink);
+            color: white;
+            padding: 24px 32px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .goal-banner-icon { font-size: 2.5rem; }
+        .goal-banner-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; }
+        .goal-banner-reqs { font-size: 0.82rem; color: #aaa; margin-top: 4px; }
+
+        /* SECTION TITLES */
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: var(--ink);
+        }
+
+        /* PROGRESS CIRCLES */
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        @media (max-width: 700px) { .progress-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .prog-card {
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            padding: 24px 16px;
+            text-align: center;
+            background: white;
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+        .prog-circle-wrap { position: relative; width: 100px; height: 100px; margin: 0 auto 12px; }
+        .prog-circle-wrap svg { transform: rotate(-90deg); }
+        .prog-pct {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+        .prog-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* WEEK TABLE */
+        .week-wrap { margin-bottom: 40px; }
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        @media (max-width: 700px) { .week-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 450px) { .week-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .day-card {
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            padding: 12px 8px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .day-card:hover { transform: translate(-2px,-2px); box-shadow: 4px 4px 0 var(--ink); }
+        .day-card.done { background: #d4edda; border-color: var(--accent2); }
+        .day-card.today { border-color: var(--accent); }
+        .day-name { font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .day-date { font-size: 0.72rem; color: var(--muted); margin: 4px 0; }
+        .day-status { font-size: 1.1rem; }
+        .day-log-btn {
+            margin-top: 8px;
+            width: 100%;
+            padding: 6px;
+            border: 1.5px solid var(--ink);
+            border-radius: 3px;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--ink);
+            color: white;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .day-log-btn:hover { background: var(--accent); border-color: var(--accent); }
+
+        /* MOTIVATION */
+        .moti-box {
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            padding: 24px 28px;
+            background: var(--gold);
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin-bottom: 16px;
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+
+        .compare-box {
+            border: 2px solid var(--ink);
+            border-radius: 4px;
+            padding: 20px 24px;
+            font-size: 0.88rem;
+            background: var(--cream);
+            margin-bottom: 40px;
+        }
+        .compare-box strong { font-family: 'Syne', sans-serif; }
+
+        /* DAILY INPUT */
+        #dailyInputPage { background: var(--paper); }
+        .daily-body { padding: 40px; max-width: 620px; margin: 0 auto; width: 100%; }
+        .daily-date-tag {
+            display: inline-block;
+            border: 2px solid var(--ink);
+            padding: 4px 14px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 28px;
+            background: var(--ink);
+            color: white;
+            letter-spacing: 0.04em;
+        }
+        .hours-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 480px) { .hours-grid { grid-template-columns: 1fr; } }
+
+        /* REGISTER PAGE */
+        .auth-tagline {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        /* GOAL SELECT */
+        .goal-card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 480px) { .goal-card-grid { grid-template-columns: 1fr; } }
+
+        .goal-opt {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            padding: 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+            background: var(--paper);
+        }
+        .goal-opt:hover { border-color: var(--ink); transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+        .goal-opt.selected { border-color: var(--ink); background: var(--ink); color: white; box-shadow: 3px 3px 0 var(--accent); }
+        .goal-opt-icon { font-size: 1.5rem; margin-bottom: 6px; }
+        .goal-opt-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; }
+        .goal-opt-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+        .goal-opt.selected .goal-opt-sub { color: #aaa; }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: var(--ink);
+            color: white;
+            padding: 14px 22px;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 4px 4px 0 var(--accent);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+            z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        textarea { resize: vertical; }
+
+        /* REQUIREMENT LIST */
+        .req-list { list-style: none; padding: 0; margin-top: 10px; }
+        .req-list li {
+            font-size: 0.8rem;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .req-list li::before { content: '→'; opacity: 0.5; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ══ -->
+<div id="loginPage" class="page">
+    <header class="site-header">
+        <div class="logo">Grow<span>Fast</span></div>
+        <span style="font-size:0.8rem; color:var(--muted);">Your personal growth OS</span>
+    </header>
+    <div class="main-wrap">
+        <div class="card">
+            <p class="auth-tagline">Welcome back</p>
+            <h1 class="card-title">Sign In</h1>
+            <p class="card-sub">Continue your growth journey</p>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" placeholder="you@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="doLogin()">Login →</button>
+                <button class="btn btn-outline" onclick="showPage('registerPage')">Create Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ REGISTER PAGE ══ -->
+<div id="registerPage" class="page">
+    <header class="site-header">
+        <div class="logo">Grow<span>Fast</span></div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('loginPage')">← Back to Login</button>
+    </header>
+    <div class="main-wrap">
+        <div class="card">
+            <p class="auth-tagline">Join today</p>
+            <h1 class="card-title">Create Account</h1>
+            <p class="card-sub">Start your transformation</p>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="regEmail" placeholder="you@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="••••••••" required>
+            </div>
+            <div class="btn-row">
+                <button class="btn" onclick="doRegister()">Register →</button>
+                <button class="btn btn-outline" onclick="showPage('loginPage')">Login Instead</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ GOAL PAGE ══ -->
+<div id="goalPage" class="page">
+    <header class="site-header">
+        <div class="logo">Grow<span>Fast</span></div>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </header>
+    <div class="main-wrap">
+        <div class="card" style="max-width:600px;">
+            <p class="auth-tagline">Step 1 of 1</p>
+            <h1 class="card-title">Set Your Goal</h1>
+            <p class="card-sub">Choose the life you want to build</p>
+            <div class="goal-card-grid" id="goalGrid"></div>
+            <button class="btn" onclick="doSetGoal()">Start My Journey →</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ DASHBOARD PAGE ══ -->
+<div id="dashboardPage" class="page">
+    <div class="dash-header">
+        <div>
+            <div class="dash-title">Growth Dashboard</div>
+            <div class="welcome-tag">Welcome back, <span id="userName"></span></div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+            <div class="logo">Grow<span>Fast</span></div>
+            <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="dash-body">
+        <!-- Goal banner -->
+        <div class="goal-banner" id="goalBanner"></div>
+
+        <!-- Progress -->
+        <div class="section-title">Progress Overview</div>
+        <div class="progress-grid">
+            <div class="prog-card">
+                <div class="prog-circle-wrap" id="pc-daily"></div>
+                <div class="prog-label">Today</div>
+            </div>
+            <div class="prog-card">
+                <div class="prog-circle-wrap" id="pc-weekly"></div>
+                <div class="prog-label">This Week</div>
+            </div>
+            <div class="prog-card">
+                <div class="prog-circle-wrap" id="pc-monthly"></div>
+                <div class="prog-label">This Month</div>
+            </div>
+            <div class="prog-card">
+                <div class="prog-circle-wrap" id="pc-yearly"></div>
+                <div class="prog-label">This Year</div>
+            </div>
+        </div>
+
+        <!-- Week -->
+        <div class="section-title">This Week</div>
+        <div class="week-wrap">
+            <div class="week-grid" id="weekGrid"></div>
+        </div>
+
+        <!-- Motivation -->
+        <div class="section-title">Motivation</div>
+        <div class="moti-box" id="motiBox"></div>
+        <div class="compare-box" id="compareBox" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- ══ DAILY INPUT PAGE ══ -->
+<div id="dailyInputPage" class="page">
+    <div class="dash-header">
+        <div class="dash-title">Daily Activity Log</div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('dashboardPage')">← Back</button>
+    </div>
+    <div class="daily-body">
+        <div class="daily-date-tag" id="selectedDate"></div>
+        <div class="hours-grid">
+            <div class="form-group">
+                <label>Study Hours *</label>
+                <input type="number" id="studyHours" min="0" max="24" step="0.5" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Work Hours *</label>
+                <input type="number" id="workHours" min="0" max="24" step="0.5" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Exercise Hours</label>
+                <input type="number" id="exerciseHours" min="0" max="24" step="0.5" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Sleep Hours</label>
+                <input type="number" id="sleepHours" min="0" max="24" step="0.5" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Other Growth (hrs)</label>
+                <input type="number" id="otherHours" min="0" max="24" step="0.5" placeholder="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Notes (optional)</label>
+            <textarea id="dailyNotes" rows="3" placeholder="What did you accomplish today?"></textarea>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-green" onclick="saveDailyLog()">Save Progress ✓</button>
+            <button class="btn btn-outline" onclick="showPage('dashboardPage')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let currentUser = null;
+let selectedDay = null;
+let selectedGoalKey = null;
+
+// ── GOALS ──
+const GOALS = {
+    software_engineer: {
+        title: "Software Engineer", icon: "💻",
+        sub: "Build & ship digital products",
+        requirements: ["Study programming 4–6 hrs daily","Practice coding challenges 2 hrs","Learn English tech terms 1 hr","Build 2–3 projects/month","Read documentation daily","Code reviews weekly"],
+        dailyTarget: 8
+    },
+    data_scientist: {
+        title: "Data Scientist", icon: "📊",
+        sub: "Turn data into decisions",
+        requirements: ["Mathematics & statistics 3 hrs","Python & R practice 3 hrs","ML algorithms 2 hrs","Data projects 2 hrs","Research papers weekly"],
+        dailyTarget: 8
+    },
+    entrepreneur: {
+        title: "Entrepreneur", icon: "🚀",
+        sub: "Build your own empire",
+        requirements: ["Business & marketing 2 hrs","Business plan 3 hrs","Network weekly","Read business books 1 hr","Analyze market 1 hr"],
+        dailyTarget: 7
+    },
+    fitness_expert: {
+        title: "Fitness Expert", icon: "💪",
+        sub: "Master health & performance",
+        requirements: ["Anatomy & nutrition 2 hrs","Training practice 3 hrs","Coaching techniques 1 hr","Get certified","Create workout plans weekly"],
+        dailyTarget: 6
+    },
+    doctor: {
+        title: "Doctor", icon: "🩺",
+        sub: "Heal and serve lives",
+        requirements: ["Medical subjects 6 hrs","Clinical skills 2 hrs","Medical journals 1 hr","Monthly workshops","Complete internship"],
+        dailyTarget: 9
+    },
+    teacher: {
+        title: "Teacher", icon: "📚",
+        sub: "Shape future generations",
+        requirements: ["Pedagogy 2 hrs","Teaching methods 2 hrs","Curriculum dev 1 hr","Observe teachers weekly","Create lesson plans"],
+        dailyTarget: 6
+    }
+};
+
+// ── PAGE NAVIGATION ──
+function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+// ── TOAST ──
+function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+function init() {
+    renderGoalGrid();
+    const saved = localStorage.getItem('gyf_user');
+    if (saved) {
+        currentUser = JSON.parse(saved);
+        if (currentUser.goal) { showPage('dashboardPage'); loadDashboard(); }
+        else showPage('goalPage');
+    } else {
+        showPage('loginPage');
+    }
+}
+
+// ── REGISTER ──
+function doRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    if (!name || !email || !password) { toast('Please fill all fields'); return; }
+
+    const users = JSON.parse(localStorage.getItem('gyf_users') || '[]');
+    if (users.find(u => u.email === email)) { toast('Email already registered!'); return; }
+
+    const user = { name, email, password, dailyLogs: {}, goal: null };
+    users.push(user);
+    localStorage.setItem('gyf_users', JSON.stringify(users));
+    toast('Registered! Please login.');
+    showPage('loginPage');
+}
+
+// ── LOGIN ──
+function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const users = JSON.parse(localStorage.getItem('gyf_users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) { toast('Invalid credentials!'); return; }
+    currentUser = user;
+    saveSession();
+    if (user.goal) { showPage('dashboardPage'); loadDashboard(); }
+    else showPage('goalPage');
+}
+
+// ── GOAL GRID ──
+function renderGoalGrid() {
+    const grid = document.getElementById('goalGrid');
+    grid.innerHTML = '';
+    Object.entries(GOALS).forEach(([key, g]) => {
+        const el = document.createElement('div');
+        el.className = 'goal-opt' + (selectedGoalKey === key ? ' selected' : '');
+        el.innerHTML = `<div class="goal-opt-icon">${g.icon}</div><div class="goal-opt-title">${g.title}</div><div class="goal-opt-sub">${g.sub}</div>`;
+        el.onclick = () => { selectedGoalKey = key; renderGoalGrid(); };
+        grid.appendChild(el);
+    });
+}
+
+function doSetGoal() {
+    if (!selectedGoalKey) { toast('Please select a goal'); return; }
+    currentUser.goal = selectedGoalKey;
+    saveSession();
+    showPage('dashboardPage');
+    loadDashboard();
+    toast('Goal set! Let\'s grow 🚀');
+}
+
+// ── DASHBOARD ──
+function loadDashboard() {
+    document.getElementById('userName').textContent = currentUser.name;
+    const g = GOALS[currentUser.goal];
+
+    // Goal banner
+    document.getElementById('goalBanner').innerHTML = `
+        <div class="goal-banner-icon">${g.icon}</div>
+        <div>
+            <div class="goal-banner-title">Goal: ${g.title}</div>
+            <ul class="req-list">${g.requirements.map(r => `<li>${r}</li>`).join('')}</ul>
+        </div>
+    `;
+
+    renderWeek();
+    calcProgress();
+    showMotivation();
+    showComparison();
+}
+
+// ── WEEK ──
+function renderWeek() {
+    const grid = document.getElementById('weekGrid');
+    grid.innerHTML = '';
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - today.getDay() + i);
+        const ds = d.toISOString().split('T')[0];
+        const log = currentUser.dailyLogs[ds];
+        const done = log && log.completed;
+        const isToday = ds === todayStr;
+
+        const el = document.createElement('div');
+        el.className = 'day-card' + (done ? ' done' : '') + (isToday ? ' today' : '');
+        el.innerHTML = `
+            <div class="day-name">${days[i]}</div>
+            <div class="day-date">${ds.slice(5)}</div>
+            <div class="day-status">${done ? '✅' : (isToday ? '⏳' : '○')}</div>
+            <button class="day-log-btn" onclick="openDaily('${ds}')">Log</button>
+        `;
+        grid.appendChild(el);
+    }
+}
+
+// ── PROGRESS ──
+function calcProgress() {
+    const g = GOALS[currentUser.goal];
+    const target = g.dailyTarget;
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Daily
+    const tLog = currentUser.dailyLogs[todayStr];
+    const daily = tLog ? Math.min(100, ((tLog.study + tLog.work) / target) * 100) : 0;
+
+    // Weekly
+    let wTotal = 0;
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - today.getDay() + i);
+        const log = currentUser.dailyLogs[d.toISOString().split('T')[0]];
+        if (log) wTotal += (log.study + log.work);
+    }
+    const weekly = Math.min(100, (wTotal / (target * 7)) * 100);
+
+    // Monthly
+    const mStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const dInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    let mTotal = 0;
+    Object.keys(currentUser.dailyLogs).forEach(ds => {
+        const ld = new Date(ds);
+        if (ld >= mStart && ld <= today) mTotal += (currentUser.dailyLogs[ds].study + currentUser.dailyLogs[ds].work);
+    });
+    const monthly = Math.min(100, (mTotal / (target * dInMonth)) * 100);
+
+    // Yearly
+    const yStart = new Date(today.getFullYear(), 0, 1);
+    let yTotal = 0;
+    Object.keys(currentUser.dailyLogs).forEach(ds => {
+        const ld = new Date(ds);
+        if (ld >= yStart && ld <= today) yTotal += (currentUser.dailyLogs[ds].study + currentUser.dailyLogs[ds].work);
+    });
+    const yearly = Math.min(100, (yTotal / (target * 365)) * 100);
+
+    drawCircle('pc-daily', daily);
+    drawCircle('pc-weekly', weekly);
+    drawCircle('pc-monthly', monthly);
+    drawCircle('pc-yearly', yearly);
+}
+
+function drawCircle(id, pct) {
+    const el = document.getElementById(id);
+    const r = 40, c = 2 * Math.PI * r;
+    const offset = c - (pct / 100) * c;
+    const color = pct >= 70 ? '#2d6a4f' : pct >= 40 ? '#c9a84c' : '#e84b3c';
+    el.innerHTML = `
+        <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="8"/>
+            <circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="8"
+                stroke-linecap="round"
+                stroke-dasharray="${c}"
+                stroke-dashoffset="${offset}"
+                style="transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 0.6s ease"/>
+        </svg>
+        <div class="prog-pct" style="color:${color}">${Math.round(pct)}%</div>
+    `;
+}
+
+// ── MOTIVATION ──
+function showMotivation() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const log = currentUser.dailyLogs[todayStr];
+    const g = GOALS[currentUser.goal];
+    let msg;
+
+    if (!log) {
+        msg = "🌟 Start your day strong! Log your activities and track your progress!";
+    } else {
+        const p = ((log.study + log.work) / g.dailyTarget) * 100;
+        if (p >= 80) {
+            const msgs = ["🎉 Outstanding! You're crushing your goals today!","💪 Incredible dedication — keep this momentum!","🚀 You're on the path to greatness!"];
+            msg = msgs[Math.floor(Math.random() * msgs.length)];
+        } else if (p >= 50) {
+            msg = "👍 Good progress! Push a little harder to reach excellence!";
+        } else {
+            msg = "💪 Don't give up! Every small step counts. Stay consistent!";
+        }
+    }
+    document.getElementById('motiBox').textContent = msg;
+}
+
+// ── COMPARISON ──
+function showComparison() {
+    const now = new Date();
+    const thisM = now.getMonth();
+    const lastM = thisM === 0 ? 11 : thisM - 1;
+    const lastMYear = thisM === 0 ? now.getFullYear() - 1 : now.getFullYear();
+
+    const thisStart = new Date(now.getFullYear(), thisM, 1);
+    const lastStart = new Date(lastMYear, lastM, 1);
+    const lastEnd = new Date(now.getFullYear(), thisM, 0);
+
+    let t1=0,d1=0,t2=0,d2=0;
+    Object.keys(currentUser.dailyLogs).forEach(ds => {
+        const ld = new Date(ds);
+        const log = currentUser.dailyLogs[ds];
+        if (ld >= thisStart && ld <= now) { t1 += log.study+log.work; d1++; }
+        if (ld >= lastStart && ld <= lastEnd) { t2 += log.study+log.work; d2++; }
+    });
+
+    const box = document.getElementById('compareBox');
+    if (d1 > 0 && d2 > 0) {
+        const diff = (((t1/d1) - (t2/d2)) / (t2/d2) * 100).toFixed(1);
+        box.style.display = 'block';
+        if (diff > 0) {
+            box.innerHTML = `<strong>📈 Month-over-Month:</strong> You're ${Math.abs(diff)}% better than last month! Keep going!`;
+            box.style.background = '#d4edda';
+        } else if (diff < 0) {
+            box.innerHTML = `<strong>📉 Month-over-Month:</strong> Progress is ${Math.abs(diff)}% lower than last month. Time to push harder!`;
+            box.style.background = '#fde8e8';
+        } else {
+            box.innerHTML = `<strong>📊 Month-over-Month:</strong> Same pace as last month. Consistency is key!`;
+            box.style.background = 'var(--cream)';
+        }
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+// ── DAILY INPUT ──
+function openDaily(ds) {
+    selectedDay = ds;
+    document.getElementById('selectedDate').textContent = ds;
+    const log = currentUser.dailyLogs[ds];
+    document.getElementById('studyHours').value = log ? log.study : '';
+    document.getElementById('workHours').value = log ? log.work : '';
+    document.getElementById('exerciseHours').value = log ? log.exercise : '';
+    document.getElementById('sleepHours').value = log ? log.sleep : '';
+    document.getElementById('otherHours').value = log ? log.other : '';
+    document.getElementById('dailyNotes').value = log ? log.notes : '';
+    showPage('dailyInputPage');
+}
+
+function saveDailyLog() {
+    const study = parseFloat(document.getElementById('studyHours').value) || 0;
+    const work = parseFloat(document.getElementById('workHours').value) || 0;
+    if (study === 0 && work === 0) { toast('Please enter study or work hours'); return; }
+
+    currentUser.dailyLogs[selectedDay] = {
+        study, work,
+        exercise: parseFloat(document.getElementById('exerciseHours').value) || 0,
+        sleep: parseFloat(document.getElementById('sleepHours').value) || 0,
+        other: parseFloat(document.getElementById('otherHours').value) || 0,
+        notes: document.getElementById('dailyNotes').value,
+        completed: true,
+        timestamp: new Date().toISOString()
+    };
+    saveSession();
+    showPage('dashboardPage');
+    loadDashboard();
+    toast('Progress saved! ✓');
+}
+
+// ── SESSION ──
+function saveSession() {
+    const users = JSON.parse(localStorage.getItem('gyf_users') || '[]');
+    const idx = users.findIndex(u => u.email === currentUser.email);
+    if (idx !== -1) users[idx] = currentUser;
+    localStorage.setItem('gyf_users', JSON.stringify(users));
+    localStorage.setItem('gyf_user', JSON.stringify(currentUser));
+}
+
+function logout() {
+    localStorage.removeItem('gyf_user');
+    currentUser = null;
+    selectedGoalKey = null;
+    showPage('loginPage');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+}
+
+// ── START ──
+init();
+</script>
+</body>
+</html>
